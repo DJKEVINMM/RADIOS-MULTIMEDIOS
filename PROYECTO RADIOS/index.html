@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radio Streaming DJKEVIN</title>
+
+<!-- 🔹 PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+
+<!-- 🔹 iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="DJKEVIN Radio">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+.background-video{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:-1;
+    pointer-events:none;
+}
+.mobile-container{
+    width:100%;
+    max-width:414px;
+    height:100vh;
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+}
+.mobile-container::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.5);
+}
+.mobile-container>*{z-index:1}
+.header{text-align:center;padding:18px;font-weight:bold}
+.main-content{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+}
+.logo-container{
+    width:200px;height:200px;
+    border-radius:16px;
+    overflow:hidden;
+    margin-bottom:18px;
+    transition:transform .08s linear;
+}
+.logo-container img{width:100%;height:100%;object-fit:cover}
+.artist-name{font-weight:900;margin-bottom:6px;text-align:center}
+.live-status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:.85rem;
+    font-weight:bold;
+    margin-bottom:18px;
+    opacity:0;
+    transition:opacity .3s;
+}
+.live-status.active{opacity:1}
+.dot{
+    width:10px;height:10px;
+    background:red;border-radius:50%;
+    animation:pulse 1.2s infinite;
+}
+@keyframes pulse{50%{transform:scale(1.6);opacity:.4}}
+.volume-container{
+    width:80%;
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+    align-items:center;
+}
+.volume-container input{flex:1;accent-color:white}
+.controls-container{
+    display:flex;
+    gap:25px;
+    align-items:center;
+}
+.control-btn{font-size:1.6rem;cursor:pointer}
+.play-button{
+    width:75px;height:75px;
+    border-radius:50%;
+    background:white;color:#000;
+    display:flex;align-items:center;justify-content:center;
+    font-size:2rem;
+}
+.social-buttons{
+    display:flex;
+    gap:18px;
+    margin-top:22px;
+}
+.social-btn{
+    width:52px;height:52px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.5rem;color:#fff;
+}
+.whatsapp{background:#25D366}
+.facebook{background:#1877F2}
+.tiktok{background:linear-gradient(45deg,#00f2ea,#ff0050)}
+.extra-buttons{
+    display:flex;
+    gap:12px;
+    margin-top:18px;
+}
+.extra-btn{
+    padding:10px 18px;
+    background:linear-gradient(45deg,#ff004f,#ff9900);
+    color:#fff;
+    text-decoration:none;
+    border-radius:30px;
+    font-size:.85rem;
+    font-weight:bold;
+    display:flex;
+    gap:8px;
+}
+audio{display:none}
+</style>
+</head>
+
+<body>
+
+<video class="background-video" autoplay loop muted playsinline>
+<source src="https://github.com/DJKEVINMM/kevin-music/raw/refs/heads/main/PinDown.io_@tanya69tanya_1769909918.mp4" type="video/mp4">
+</video>
+
+<div class="mobile-container">
+<header class="header">RADIOS MULTIMEDIOS</header>
+
+<main class="main-content">
+
+<div class="logo-container" id="logoBox">
+    <img id="radioLogo">
+</div>
+
+<div class="artist-name" id="radioName">Cargando...</div>
+
+<div class="live-status" id="liveStatus">
+    <span class="dot"></span> SONANDO EN VIVO
+</div>
+
+<div class="volume-container">
+    <i class="fas fa-volume-low"></i>
+    <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+    <i class="fas fa-volume-high"></i>
+</div>
+
+<div class="controls-container">
+    <i class="fas fa-backward control-btn" id="prevBtn"></i>
+    <div class="play-button" id="playBtn">
+        <i class="fas fa-play" id="playIcon"></i>
+    </div>
+    <i class="fas fa-forward control-btn" id="nextBtn"></i>
+</div>
+
+<div class="social-buttons">
+    <a href="#" class="social-btn whatsapp"><i class="fab fa-whatsapp"></i></a>
+    <a href="#" class="social-btn facebook"><i class="fab fa-facebook-f"></i></a>
+    <a href="#" class="social-btn tiktok"><i class="fab fa-tiktok"></i></a>
+</div>
+
+<div class="extra-buttons">
+    <a href="#" id="installBtn" class="extra-btn">
+        <i class="fas fa-download"></i> Instalar App
+    </a>
+    <a href="#" onclick="compartirRadio()" class="extra-btn">
+        <i class="fas fa-share-alt"></i> Compartir
+    </a>
+</div>
+
+</main>
+
+<audio id="radio" crossorigin="anonymous"></audio>
+</div>
+
+<script>
+// ===== RADIOS (LAS 7, SIN TOCAR) =====
+const radios=[
+{name:"RADIO PARTY VALENCIA",stream:"https://miestacion.turadioonline.com.ar:8286/stream",logo:"https://i.postimg.cc/50LH1fxn/Chat-GPT-Image-1-feb-2026-02-12-40.png"},
+{name:"RADIO PRIMAVERA REAL",stream:"https://miestacion.turadioonline.com.ar:8342/stream",logo:"https://i.postimg.cc/Sx5ZnGh2/Chat-GPT-Image-1-feb-2026-02-12-40t.png"},
+{name:"RADIO TEO PAEZ ONLINE",stream:"https://miestacion.turadioonline.com.ar/8262/stream",logo:"https://i.postimg.cc/Kv33Z7J3/LOGO-RADIO-3.png"},
+{name:"Radio Chokokue Remiandu",stream:"https://miestacion.turadioonline.com.ar:8280/stream",logo:"https://i.postimg.cc/44t9wJt9/LOGO-RADIO-1.png"},
+{name:"Radio Nueva Era Málaga",stream:"https://streaming01.radiosenlinea.com.ar/9156/stream",logo:"https://i.postimg.cc/CMDcDpK1/imagen-circular-recortada.png"},
+{name:"Radio Espy Madrid",stream:"https://nodo102.liveradio.com.es:8028/stream",logo:"https://i.postimg.cc/3J3ZGsvk/Chat-GPT-Image-1-feb-2026-02-12-40-Recuperado.png"},
+{name:"Radio Kaiser Barcelona",stream:"https://streaming01.radiosenlinea.com.ar/8328/stream",logo:"https://i.postimg.cc/9XDDnJHy/Chat-GPT-Image-1-feb-2026-02-12-40-Recuperadoetet.png"}
+];
+
+let index=0,playing=false;
+const audio=document.getElementById("radio");
+const radioName=document.getElementById("radioName");
+const radioLogo=document.getElementById("radioLogo");
+const playIcon=document.getElementById("playIcon");
+const liveStatus=document.getElementById("liveStatus");
+const volume=document.getElementById("volume");
+
+function loadRadio(){
+  audio.src=radios[index].stream;
+  radioName.textContent=radios[index].name;
+  radioLogo.src=radios[index].logo;
+}
+loadRadio();
+
+playBtn.onclick=()=>playing?audio.pause():audio.play();
+audio.onplay=()=>{playing=true;liveStatus.classList.add("active");playIcon.className="fas fa-pause";}
+audio.onpause=()=>{playing=false;liveStatus.classList.remove("active");playIcon.className="fas fa-play";}
+volume.oninput=()=>audio.volume=volume.value;
+nextBtn.onclick=()=>{index=(index+1)%radios.length;loadRadio();if(playing)audio.play();}
+prevBtn.onclick=()=>{index=(index-1+radios.length)%radios.length;loadRadio();if(playing)audio.play();}
+
+function compartirRadio(){
+navigator.share({title:"DJKEVIN MUSIC",text:"Escucha esta radio en vivo",url:location.href});
+}
+
+// ===== PWA ANDROID =====
+let deferredPrompt;
+const installBtn=document.getElementById("installBtn");
+installBtn.style.display="none";
+
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  installBtn.style.display="flex";
+});
+
+installBtn.onclick=async()=>{
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  deferredPrompt=null;
+  installBtn.style.display="none";
+};
+
+// ===== iOS =====
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)){
+  installBtn.style.display="flex";
+  installBtn.innerHTML='<i class="fas fa-plus"></i> Añadir a Inicio';
+  installBtn.onclick=()=>alert("Safari → Compartir → Añadir a pantalla de inicio");
+}
+
+// ===== SERVICE WORKER =====
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
